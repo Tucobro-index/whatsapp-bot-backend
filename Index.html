@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WhatsApp Bot</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--accent:#10b981;--accent2:#34d399;--r:22px}
+[data-theme=dark]{--bg:#0b0f14;--glass:rgba(255,255,255,.07);--glass2:rgba(255,255,255,.12);--line:rgba(255,255,255,.14);--text:#f1f5f9;--muted:#94a3b8;--inp:rgba(0,0,0,.35);--sh:0 10px 40px rgba(0,0,0,.45)}
+[data-theme=light]{--bg:#eef2f7;--glass:rgba(255,255,255,.62);--glass2:rgba(255,255,255,.85);--line:rgba(15,23,42,.1);--text:#0f172a;--muted:#64748b;--inp:rgba(255,255,255,.8);--sh:0 10px 40px rgba(15,23,42,.12)}
+*{box-sizing:border-box;margin:0}
+body{min-height:100vh;font:500 15px/1.5 'Plus Jakarta Sans',system-ui,sans-serif;color:var(--text);background:var(--bg);overflow-x:hidden;transition:background .3s}
+body::before,body::after{content:"";position:fixed;z-index:-1;width:60vmax;height:60vmax;border-radius:50%;filter:blur(90px);opacity:.35;background:var(--accent);transition:background .4s}
+body::before{top:-25vmax;left:-20vmax}body::after{bottom:-30vmax;right:-20vmax;opacity:.22}
+.hidden{display:none!important}
+.glass{background:var(--glass);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);backdrop-filter:blur(22px) saturate(160%);-webkit-backdrop-filter:blur(22px) saturate(160%)}
+.card{padding:22px}.card h2{font-size:17px;font-weight:700}.sub{color:var(--muted);font-size:13px;margin:2px 0 14px}
+label{display:block;font-size:12.5px;color:var(--muted);margin:12px 0 6px;font-weight:600}
+.field{position:relative}.field i{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--muted)}
+input{width:100%;background:var(--inp);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:13px 14px 13px 42px;font:inherit;outline:none;transition:.15s}
+input:focus{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 25%,transparent)}
+.btn{width:100%;margin-top:16px;padding:14px;border:0;border-radius:14px;color:#fff;font:700 15px inherit;font-family:inherit;cursor:pointer;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 8px 22px color-mix(in srgb,var(--accent) 40%,transparent);transition:.15s;display:flex;gap:8px;align-items:center;justify-content:center}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.08)}.btn:active{transform:none}.btn:disabled{opacity:.6;cursor:wait}
+.icon{width:42px;height:42px;border-radius:13px;border:1px solid var(--line);background:var(--glass2);color:var(--text);cursor:pointer;font-size:15px;transition:.15s;flex:none}
+.icon:hover{color:var(--accent);transform:translateY(-2px)}
+.logo{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;color:#fff;font-size:24px;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 8px 22px color-mix(in srgb,var(--accent) 45%,transparent)}
+.colors{display:flex;gap:8px}.colors button{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;outline:2px solid transparent;transition:.15s}
+.colors button.on{outline-color:var(--text)}.colors button:hover{transform:scale(1.15)}
+/* Login */
+#auth{min-height:100vh;display:grid;place-items:center;padding:20px}
+.login{width:100%;max-width:400px;padding:30px 26px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;gap:10px}
+.login h1{font-size:26px;font-weight:800;margin:14px 0 2px;letter-spacing:-.02em}
+/* App */
+header{position:sticky;top:0;z-index:5;margin:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+header .logo{width:40px;height:40px;font-size:19px;border-radius:12px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px}
+.tools{display:flex;align-items:center;gap:10px}
+main{max-width:1000px;margin:auto;padding:6px 14px 40px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.wide{grid-column:1/-1}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;font-size:12.5px;font-weight:700;background:var(--glass2);border:1px solid var(--line)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.pill.connected .dot{background:#22c55e;box-shadow:0 0 10px #22c55e}.pill.disconnected .dot{background:#ef4444}.pill.generating .dot{background:#f59e0b;animation:p 1s infinite}
+@keyframes p{50%{opacity:.3}}
+.qrbox{margin:16px auto 0;width:236px;height:236px;border-radius:20px;background:#fff;display:grid;place-items:center;padding:10px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.qrbox.empty{background:var(--inp);border:2px dashed var(--line);color:var(--muted);font-size:13px;text-align:center;box-shadow:none}
+.pair{margin-top:16px;text-align:center;padding:18px 10px;border-radius:18px;background:var(--inp);border:1px dashed var(--accent);font:500 30px 'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--accent);cursor:pointer;word-break:break-all}
+.pair.ph{border-color:var(--line);color:var(--muted);font:500 14px 'Plus Jakarta Sans';letter-spacing:0;cursor:default}
+.hint{color:var(--muted);font-size:12px;margin-top:8px;text-align:center}
+.steps{margin:12px 0 0 18px;color:var(--muted);font-size:12.5px}
+.console{background:#05070a;border:1px solid var(--line);border-radius:16px;height:210px;overflow:auto;padding:14px;font:500 12.5px/1.65 'JetBrains Mono',monospace;color:#bbf7d0}
+.console .t{color:#64748b}.console .err{color:#f87171}.console .ok{color:#4ade80}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:760px){main{grid-template-columns:1fr}.pair{font-size:25px}.colors button{width:26px;height:26px}.hide-m{display:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN (un solo usuario, sin registro) -->
+<section id="auth">
+  <form class="glass login" id="loginForm">
+    <div class="top">
+      <div class="colors" data-colors></div>
+      <button type="button" class="icon" data-themebtn aria-label="Cambiar tema"><i class="fa-solid fa-circle-half-stroke"></i></button>
+    </div>
+    <div class="logo"><i class="fa-brands fa-whatsapp"></i></div>
+    <h1>WhatsApp Bot</h1>
+    <p class="sub">Inicia sesión para administrar tu bot.</p>
+    <label for="lUser">Usuario</label>
+    <div class="field"><i class="fa-solid fa-user"></i><input id="lUser" required autocomplete="username"></div>
+    <label for="lPass">Contraseña</label>
+    <div class="field"><i class="fa-solid fa-lock"></i><input id="lPass" type="password" required autocomplete="current-password"></div>
+    <button class="btn" type="submit"><i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión</button>
+  </form>
+</section>
+
+<!-- DASHBOARD -->
+<section id="app" class="hidden">
+  <header class="glass">
+    <div class="brand"><div class="logo"><i class="fa-brands fa-whatsapp"></i></div>WhatsApp Bot</div>
+    <div class="tools">
+      <div class="colors hide-m" data-colors></div>
+      <button class="icon" data-themebtn aria-label="Cambiar tema"><i class="fa-solid fa-circle-half-stroke"></i></button>
+      <button class="icon" id="logout" aria-label="Cerrar sesión"><i class="fa-solid fa-right-from-bracket"></i></button>
+    </div>
+  </header>
+  <main>
+    <article class="glass card">
+      <div class="head"><div><h2><i class="fa-solid fa-qrcode"></i> Código QR</h2><p class="sub">Dispositivos vinculados &gt; Vincular un dispositivo.</p></div>
+        <span class="pill generating" id="status"><i class="dot"></i><b id="statusTxt">Generando QR</b></span></div>
+      <div class="qrbox empty" id="qrBox">Generando QR…</div>
+      <button class="btn" id="refreshQr"><i class="fa-solid fa-rotate"></i> Actualizar QR</button>
+    </article>
+
+    <article class="glass card">
+      <h2><i class="fa-solid fa-key"></i> Código de emparejamiento</h2>
+      <p class="sub">Vincula sin escanear, usando tu número.</p>
+      <label for="phone">Teléfono con código de país</label>
+      <div class="field"><i class="fa-solid fa-phone"></i><input id="phone" type="tel" inputmode="tel" placeholder="+573001234567"></div>
+      <button class="btn" id="genPair"><i class="fa-solid fa-wand-magic-sparkles"></i> Generar Código</button>
+      <div class="pair ph" id="pairOut">Aquí aparecerá tu código</div>
+      <p class="hint">Toca el código para copiarlo.</p>
+      <ol class="steps"><li>Genera el código aquí.</li><li>En WhatsApp: Dispositivos vinculados &gt; Vincular &gt; «Vincular con el número de teléfono».</li><li>Escríbelo en menos de 1 minuto.</li></ol>
+    </article>
+
+    <article class="glass card wide">
+      <div class="head"><div><h2><i class="fa-solid fa-terminal"></i> Consola de estado</h2><p class="sub">Eventos del bot en tiempo real.</p></div>
+        <button class="icon" id="clearLog" aria-label="Limpiar"><i class="fa-solid fa-trash"></i></button></div>
+      <div class="console" id="console" role="log" aria-live="polite"></div>
+    </article>
+  </main>
+</section>
+
+<script>
+/* =====================================================================
+   CONFIGURACIÓN: Ya está lista la ruta provisional para conectar
+   ===================================================================== */
+const API_URL = "https://whatsapp-bot-backend.onrender.com";
+const POLL_MS = 3000;
+
+const $ = id => document.getElementById(id);
+let token = sessionStorage.getItem("wb_token"), timer = null, lastLogId = 0, lastQr = "";
+const ls = { get:(k,d)=>{try{return localStorage.getItem(k)||d}catch(_){return d}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch(_){}} };
+
+/* ---------- Tema y color de acento ---------- */
+const COLORS = {Esmeralda:["#10b981","#34d399"],"Azul eléctrico":["#2563ff","#38bdf8"],Morado:["#8b5cf6","#c084fc"],Fucsia:["#d946ef","#f472b6"],Ámbar:["#f59e0b","#fbbf24"]};
+function applyAccent(n){const [a,b]=COLORS[n]||COLORS.Esmeralda;const s=document.documentElement.style;s.setProperty("--accent",a);s.setProperty("--accent2",b);ls.set("wb_accent",n);
+  document.querySelectorAll("[data-colors] button").forEach(x=>x.classList.toggle("on",x.title===n))}
+document.querySelectorAll("[data-colors]").forEach(box=>Object.entries(COLORS).forEach(([n,[a]])=>{
+  const b=document.createElement("button");b.type="button";b.title=n;b.setAttribute("aria-label",n);b.style.background=a;b.onclick=()=>applyAccent(n);box.appendChild(b)}));
+document.querySelectorAll("[data-themebtn]").forEach(b=>b.onclick=()=>{const t=document.documentElement.dataset.theme==="dark"?"light":"dark";document.documentElement.dataset.theme=t;ls.set("wb_theme",t)});
+document.documentElement.dataset.theme=ls.get("wb_theme",matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");
+applyAccent(ls.get("wb_accent","Esmeralda"));
+
+/* ---------- Avisos (SweetAlert2) ---------- */
+const Toast = Swal.mixin({toast:true,position:"top",showConfirmButton:false,timer:3200,timerProgressBar:true});
+const toast = (t,icon="success") => Toast.fire({icon,title:t});
+
+function log(msg, cls=""){
+  const c=$("console"), t=new Date().toLocaleTimeString("es-CO",{hour12:false}), d=document.createElement("div");
+  d.innerHTML=`<span class="t">[${t}]</span> <span class="${cls}"></span>`; d.lastChild.textContent=msg; c.appendChild(d); c.scrollTop=c.scrollHeight;
+}
+
+/* fetch() hacia el backend con el token de sesión */
+async function api(path, method="GET", body){
+  const res = await fetch(API_URL+path,{method,headers:{"Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{})},body:body?JSON.stringify(body):undefined});
+  const data = await res.json().catch(()=>({}));
+  if(res.status===401 && token){ logout(); throw new Error("Tu sesión expiró"); }
+  if(!res.ok) throw new Error(data.error||"Error "+res.status);
+  return data;
+}
+
+/* ---------- Login ---------- */
+$("loginForm").addEventListener("submit", async e=>{
+  e.preventDefault(); const b=e.submitter; b.disabled=true;
+  try{
+    const d = await api("/api/login","POST",{usuario:$("lUser").value.trim(),password:$("lPass").value});
+    token=d.token; sessionStorage.setItem("wb_token",token); toast("Bienvenido"); enter();
+  }catch(err){ Swal.fire({icon:"error",title:"No se pudo entrar",text:err.message==="Failed to fetch"?"No hay conexión con el servidor. Revisa API_URL y que el backend esté encendido.":err.message,confirmButtonColor:getComputedStyle(document.documentElement).getPropertyValue("--accent")}); }
+  b.disabled=false;
+});
+function logout(){ sessionStorage.clear(); token=null; clearInterval(timer); $("app").classList.add("hidden"); $("auth").classList.remove("hidden"); }
+$("logout").onclick=()=>{logout();toast("Sesión cerrada","info")};
+
+function enter(){
+  $("auth").classList.add("hidden"); $("app").classList.remove("hidden");
+  log("Panel iniciado","ok"); refreshQR(); pollLogs(); clearInterval(timer);
+  timer=setInterval(()=>{refreshQR(true);pollLogs()},POLL_MS);
+}
+
+/* ---------- QR y estado ---------- */
+function setStatus(s){ $("status").className="pill "+s; $("statusTxt").textContent={connected:"Conectado",disconnected:"Desconectado",generating:"Generando QR"}[s]||s; }
+async function refreshQR(silent){
+  try{
+    const {status,qr}=await api("/api/qr"); setStatus(status); const box=$("qrBox");
+    if(status==="connected"){ box.className="qrbox empty"; box.innerHTML='<div><i class="fa-solid fa-circle-check" style="font-size:44px;color:#22c55e"></i><p style="margin-top:8px">Dispositivo vinculado</p></div>'; lastQr=""; }
+    else if(qr&&qr!==lastQr){ lastQr=qr; box.className="qrbox"; box.innerHTML=""; new QRCode(box,{text:qr,width:212,height:212,correctLevel:QRCode.CorrectLevel.M}); }
+    else if(!qr){ box.className="qrbox empty"; box.textContent="Generando QR…"; lastQr=""; }
+  }catch(err){ setStatus("disconnected"); if(!silent) toast(err.message,"error"); }
+}
+$("refreshQr").onclick=()=>{lastQr="";refreshQR()};
+
+/* ---------- Código de emparejamiento (real, lo genera Baileys en el servidor) ---------- */
+$("genPair").onclick=async()=>{
+  const phone=$("phone").value.replace(/[\s()-]/g,"");
+  if(!/^\+\d{8,15}$/.test(phone)) return toast("Usa el formato +573001234567","warning");
+  const b=$("genPair"); b.disabled=true;
+  try{
+    const {code}=await api("/api/pairing","POST",{phone});
+    const c=String(code).replace(/[^A-Z0-9]/gi,"").toUpperCase(), o=$("pairOut");
+    o.className="pair"; o.textContent=c.slice(0,4)+"-"+c.slice(4,8); toast("Código generado. Escríbelo ya en WhatsApp");
+  }catch(err){ toast(err.message,"error"); log(err.message,"err"); }
+  b.disabled=false;
+};
+$("pairOut").onclick=()=>{const o=$("pairOut"); if(o.classList.contains("ph"))return; navigator.clipboard?.writeText(o.textContent).then(()=>toast("Código copiado"))};
+
+/* ---------- Consola ---------- */
+async function pollLogs(){
+  try{ const {logs}=await api("/api/logs?since="+lastLogId); logs.forEach(l=>{lastLogId=Math.max(lastLogId,l.id);log(l.msg,l.level)}); }catch(_){}
+}
+$("clearLog").onclick=()=>{$("console").innerHTML=""};
+
+if(token) enter();
+</script>
+</body>
+</html>
